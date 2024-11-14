@@ -7,7 +7,7 @@ export const categories = [
  export const questions = [
     {
       id: 1,
-      category: 1,
+      category: "43iEU5IYMfJ8C1u0eFzgQU",
       text: "Which is the largest continent by land area?",
       image: "/placeholder.svg?height=200&width=300",
       options: ["Africa", "North America", "Asia", "Europe", "South America"],
@@ -16,7 +16,7 @@ export const categories = [
     },
     {
       id: 2,
-      category: 1,
+      category: "43iEU5IYMfJ8C1u0eFzgQU",
       text: "Which continent is known as the 'Dark Continent'?",
       image: "/placeholder.svg?height=200&width=300",
       options: ["Africa", "Antarctica", "South America", "Australia", "Europe"],
@@ -25,7 +25,7 @@ export const categories = [
     },
     {
       id: 3,
-      category: 1,
+      category: "43iEU5IYMfJ8C1u0eFzgQU",
       text: "Which is the smallest continent by land area?",
       image: "/placeholder.svg?height=200&width=300",
       options: ["Europe", "Australia", "South America", "Antarctica", "North America"],
@@ -34,7 +34,7 @@ export const categories = [
     },
     {
       id: 4,
-      category: 2,
+      category: "3optJGV4dXdoPC6EXcSSlP",
       text: "What is the largest ocean on Earth?",
       image: "/placeholder.svg?height=200&width=300",
       options: ["Atlantic Ocean", "Indian Ocean", "Arctic Ocean", "Southern Ocean", "Pacific Ocean"],
@@ -43,7 +43,7 @@ export const categories = [
     },
     {
       id: 5,
-      category: 2,
+      category: "3optJGV4dXdoPC6EXcSSlP",
       text: "Which ocean is located between Africa and Australia?",
       image: "/placeholder.svg?height=200&width=300",
       options: ["Pacific Ocean", "Atlantic Ocean", "Indian Ocean", "Arctic Ocean", "Southern Ocean"],
@@ -52,7 +52,7 @@ export const categories = [
     },
     {
       id: 6,
-      category: 3,
+      category: "3optJGV4dXdoPC6EXcSSlP",
       text: "What is the highest mountain in the world?",
       image: "/placeholder.svg?height=200&width=300",
       options: ["K2", "Mount Kilimanjaro", "Mount Everest", "Mount Fuji", "Matterhorn"],
@@ -61,7 +61,7 @@ export const categories = [
     },
     {
       id: 7,
-      category: 3,
+      category: "3optJGV4dXdoPC6EXcSSlP",
       text: "Which mountain range runs along the border of France and Spain?",
       image: "/placeholder.svg?height=200&width=300",
       options: ["Alps", "Andes", "Pyrenees", "Carpathians", "Urals"],
@@ -70,7 +70,7 @@ export const categories = [
     },
     {
       id: 8,
-      category: 1,
+      category: "43iEU5IYMfJ8C1u0eFzgQU",
       text: "Which continent is home to the Amazon Rainforest?",
       image: "/placeholder.svg?height=200&width=300",
       options: ["Africa", "Asia", "North America", "South America", "Australia"],
@@ -79,7 +79,7 @@ export const categories = [
     },
     {
       id: 9,
-      category: 2,
+      category: "43iEU5IYMfJ8C1u0eFzgQU",
       text: "Which ocean is home to the Great Barrier Reef?",
       image: "/placeholder.svg?height=200&width=300",
       options: ["Atlantic Ocean", "Pacific Ocean", "Indian Ocean", "Arctic Ocean", "Southern Ocean"],
@@ -88,7 +88,7 @@ export const categories = [
     },
     {
       id: 10,
-      category: 3,
+      category: "43iEU5IYMfJ8C1u0eFzgQU",
       text: "What is the name of the dormant volcano that is also the highest peak in Africa?",
       image: "/placeholder.svg?height=200&width=300",
       options: ["Mount Kilimanjaro", "Mount Kenya", "Mount Elgon", "Mount Meru", "Mount Stanley"],
@@ -97,7 +97,7 @@ export const categories = [
     },
     {
       id: 11,
-      category: 1,
+      category: "43iEU5IYMfJ8C1u0eFzgQU",
       text: "Which continent is the only one to lie in all four hemispheres?",
       image: "/placeholder.svg?height=200&width=300",
       options: ["North America", "Europe", "Asia", "Africa", "Australia"],

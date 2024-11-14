@@ -1,13 +1,13 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react";
 import HeaderComponent from "@/components/ui/header"
 import FooterComponent from "@/components/ui/footer"
 import CategorySelectionComponent from "@/components/ui/categorySelection"
 import QuizComponent from "@/components/ui/quiz"
 import ResultsComponent from "@/components/ui/results"
 import ReviewComponent from "@/components/ui/review"
-import { categories, questions } from "@/data/mockData"
+import { questions } from "@/data/mockData"
 
 const Header = HeaderComponent
 const Footer = FooterComponent
@@ -17,11 +17,59 @@ const Results = ResultsComponent
 const Review = ReviewComponent
 
 export default function GeodynamicsPlatform() {
-  const [stage, setStage] = useState<any>("category")
-  const [selectedCategory, setSelectedCategory] = useState<any>(null)
+  const [categories, setCategories] = useState<any[]>([])
+  const [isLoading, setIsLoading] = useState<boolean>(true)
+  const [stage, setStage] = useState("category");
+  const [selectedCategory, setSelectedCategory] = useState(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState<number>(0)
   const [answers, setAnswers] = useState<any>({})
-  const [quizQuestions, setQuizQuestions] = useState<any>([])
+  const [quizQuestions, setQuizQuestions] = useState<any>([]);
+
+  useEffect(() => {
+    async function fetchCategories() {
+      try {
+        const response = await fetch(
+          `https://cdn.contentful.com/spaces/${process.env.NEXT_PUBLIC_CONTENTFUL_SPACE_ID}/environments/master/entries?access_token=${process.env.NEXT_PUBLIC_CONTENTFUL_ACCESS_TOKEN}&content_type=categories`
+        )
+        const data = await response.json()
+        const items = data.items
+  
+        function extractDescription(richText: any): string {
+          let description = ""
+  
+          if (richText && richText.content) {
+            richText.content.forEach((node: any) => {
+              if (node.nodeType === "paragraph" && node.content) {
+                node.content.forEach((childNode: any) => {
+                  if (childNode.nodeType === "text") {
+                    description += childNode.value
+                  }
+                })
+              }
+            })
+          }
+  
+          return description
+        }
+  
+        const categories = items.map((item: any) => {
+          return {
+            id: item.sys.id, // Usando o item.sys.id como ID
+            name: item.fields.categoryName,
+            description: extractDescription(item.fields.categoryDescription),
+          }
+        })
+  
+        setCategories(categories)
+      } catch (error) {
+        console.error("Erro ao buscar categorias:", error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+  
+    fetchCategories()
+  }, [])
 
   const startQuiz = (categoryId: any) => {
     const categoryQuestions = questions.filter((q) => q.category === categoryId)
