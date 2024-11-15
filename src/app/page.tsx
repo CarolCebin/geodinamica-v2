@@ -172,6 +172,8 @@ export default function GeodynamicsPlatform() {
                 correctAnswers={calculateResults()}
                 totalQuestions={questions.length}
                 onReviewQuiz={() => setStage("review")}
+                onTryAgain={() => console.log("tentando novamente")}
+                onChooseNewQuiz={() => console.log("escolhendo novo quiz")}
               />
             )}
             {stage === "review" && (
