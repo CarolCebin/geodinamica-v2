@@ -1,147 +1,217 @@
 "use client"
 
-import { useState, useEffect } from "react";
-import HeaderComponent from "@/components/ui/header"
-import FooterComponent from "@/components/ui/footer"
-import CategorySelectionComponent from "@/components/ui/categorySelection"
-import QuizComponent from "@/components/ui/quiz"
-import ResultsComponent from "@/components/ui/results"
-import ReviewComponent from "@/components/ui/review"
-import { questions } from "@/data/mockData"
+import { useState, useEffect } from "react"
+import Image from "next/image"
+import Link from "next/link"
+import { Button } from "@/components/ui/button"
+import { Book, Menu } from 'lucide-react'
+import { CategorySelection } from '@/components/ui/categorySelection'
+import { Quiz } from '@/components/ui/quiz'
+import { Results } from '@/components/ui/results'
+import { Review } from '@/components/ui/review'
+import { fetchCategories, fetchQuestions } from '@/app/api'
+import { Category, Question } from '@/app/types'
 
-const Header = HeaderComponent
-const Footer = FooterComponent
-const CategorySelection = CategorySelectionComponent
-const Quiz = QuizComponent
-const Results = ResultsComponent
-const Review = ReviewComponent
+const geodynamicsTheme = {
+  "--primary": "rgb(139, 48, 140)",
+  "--primary-foreground": "rgb(255, 255, 255)",
+  "--secondary": "rgb(29, 44, 64)",
+  "--accent": "rgb(37, 184, 217)",
+  "--warning": "rgb(242, 166, 73)",
+  "--destructive": "rgb(217, 48, 48)",
+  "--background": "rgb(255, 255, 255)",
+  "--foreground": "rgb(29, 44, 64)"
+} as const
 
 export default function GeodynamicsPlatform() {
-  const [categories, setCategories] = useState<any[]>([])
-  const [isLoading, setIsLoading] = useState<boolean>(true)
-  const [stage, setStage] = useState("category");
-  const [selectedCategory, setSelectedCategory] = useState(null);
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState<number>(0)
-  const [answers, setAnswers] = useState<any>({})
-  const [quizQuestions, setQuizQuestions] = useState<any>([]);
+  const [stage, setStage] = useState("category")
+  const [categories, setCategories] = useState<Category[]>([])
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
+  const [questions, setQuestions] = useState<Question[]>([])
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
+  const [answers, setAnswers] = useState<Record<string, string>>({})
+  const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    async function fetchCategories() {
+    const loadCategories = async () => {
       try {
-        const response = await fetch(
-          `https://cdn.contentful.com/spaces/${process.env.NEXT_PUBLIC_CONTENTFUL_SPACE_ID}/environments/master/entries?access_token=${process.env.NEXT_PUBLIC_CONTENTFUL_ACCESS_TOKEN}&content_type=categories`
-        )
-        const data = await response.json()
-        const items = data.items
-  
-        function extractDescription(richText: any): string {
-          let description = ""
-  
-          if (richText && richText.content) {
-            richText.content.forEach((node: any) => {
-              if (node.nodeType === "paragraph" && node.content) {
-                node.content.forEach((childNode: any) => {
-                  if (childNode.nodeType === "text") {
-                    description += childNode.value
-                  }
-                })
-              }
-            })
-          }
-  
-          return description
+        setIsLoading(true)
+        const fetchedCategories = await fetchCategories()
+        console.log('Fetched categories:', fetchedCategories)
+        if (fetchedCategories.length === 0) {
+          setError('No categories found. Please try again later.')
+        } else {
+          setCategories(fetchedCategories)
+          setError(null)
         }
-  
-        const categories = items.map((item: any) => {
-          return {
-            id: item.sys.id, // Usando o item.sys.id como ID
-            name: item.fields.categoryName,
-            description: extractDescription(item.fields.categoryDescription),
-          }
-        })
-  
-        setCategories(categories)
-      } catch (error) {
-        console.error("Erro ao buscar categorias:", error)
+      } catch (err) {
+        console.error('Error loading categories:', err)
+        setError('Failed to load categories. Please try again later.')
       } finally {
         setIsLoading(false)
       }
     }
-  
-    fetchCategories()
+    loadCategories()
   }, [])
 
-  const startQuiz = (categoryId: any) => {
-    const categoryQuestions = questions.filter((q) => q.category === categoryId)
-    const randomQuestions = categoryQuestions.sort(() => 0.5 - Math.random()).slice(0, 10)
-    setQuizQuestions(randomQuestions)
-    setSelectedCategory(categoryId)
-    setStage("quiz")
-    setCurrentQuestionIndex(0)
-    setAnswers({})
+  const startQuiz = async (categoryId: string) => {
+    try {
+      setSelectedCategory(categoryId)
+      const fetchedQuestions = await fetchQuestions(categoryId)
+      if (fetchedQuestions.length === 0) {
+        setError('No questions found for this category. Please try another category.')
+        setStage("category")
+      } else {
+        setQuestions(fetchedQuestions)
+        setStage("quiz")
+        setError(null)
+      }
+    } catch (err) {
+      console.error('Error starting quiz:', err)
+      setError('Failed to load questions. Please try again later.')
+      setStage("category")
+    }
   }
 
-  const handleAnswer = (answer: any) => {
-    setAnswers({ ...answers, [currentQuestionIndex]: answer })
-    if (currentQuestionIndex < quizQuestions.length - 1) {
+  const handleAnswer = (answer: string) => {
+    setAnswers({ ...answers, [questions[currentQuestionIndex].id]: answer })
+    setSelectedAnswer(answer)
+  }
+
+  const goToNextQuestion = () => {
+    if (currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1)
-    } else {
-      setStage("results")
+      setSelectedAnswer(answers[questions[currentQuestionIndex + 1].id] || null)
     }
+  }
+
+  const goToPreviousQuestion = () => {
+    if (currentQuestionIndex > 0) {
+      setCurrentQuestionIndex(currentQuestionIndex - 1)
+      setSelectedAnswer(answers[questions[currentQuestionIndex - 1].id] || null)
+    }
+  }
+
+  const finishQuiz = () => {
+    setStage("results")
   }
 
   const calculateResults = () => {
     let correct = 0
-    quizQuestions.forEach((q: any, index: number) => {
-      if (answers[index] === q.correctAnswer) correct++
+    questions.forEach((q) => {
+      if (answers[q.id] === q.correctOptionId) correct++
     })
-    return { correct, incorrect: quizQuestions.length - correct }
+    return correct
   }
 
-  const renderContent = () => {
-    switch (stage) {
-      case "category":
-        return <CategorySelection categories={categories} startQuiz={startQuiz} />
-      case "quiz":
-        const question = quizQuestions[currentQuestionIndex]
-        return (
-          <Quiz
-            question={question}
-            questionIndex={currentQuestionIndex}
-            totalQuestions={quizQuestions.length}
-            handleAnswer={handleAnswer}
-          />
-        )
-      case "results":
-        const resultsData = calculateResults()
-        return (
-          <Results
-            results={resultsData}
-            totalQuestions={quizQuestions.length}
-            onReview={() => setStage("review")}
-          />
-        )
-      case "review":
-        return (
-          <Review
-            quizQuestions={quizQuestions}
-            answers={answers}
-            onBackToCategories={() => setStage("category")}
-          />
-        )
-      default:
-        return null
-    }
-  }
+  useEffect(() => {
+    const root = document.documentElement
+    Object.entries(geodynamicsTheme).forEach(([key, value]) => {
+      root.style.setProperty(key, value)
+    })
+  }, [])
 
   return (
     <div className="flex flex-col min-h-screen">
-      <Header />
+      <header className="bg-[#8B308C] text-white shadow-md">
+        <div className="container mx-auto px-4 py-4">
+          <nav className="flex items-center justify-between">
+            <Link href="/" className="flex items-center space-x-2">
+              <Image
+                src="logo-geodinamica.svg"
+                alt="Logo Geodinâmica"
+                width={48}
+                height={48}
+                className="rounded-md"
+              />
+              <span className="text-xl font-bold">Geodinâmica</span>
+            </Link>
+            <div className="hidden md:flex space-x-4">
+              <Link href="/learn" className="hover:underline">
+                Aprender
+              </Link>
+              <Link href="/about" className="hover:underline">
+                Sobre
+              </Link>
+              <Link href="/contact" className="hover:underline">
+                Contato
+              </Link>
+            </div>
+            <Button variant="ghost" size="icon" className="md:hidden">
+              <Menu className="h-6 w-6" />
+              <span className="sr-only">Abrir menu</span>
+            </Button>
+          </nav>
+        </div>
+      </header>
+
       <main className="flex-grow container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold text-center mb-6">Welcome to Geodynamics</h1>
-        {renderContent()}
+        <h1 className="text-3xl font-bold text-center mb-6">Bem-vindo à Geodinâmica</h1>
+        {error && <p className="text-red-500 text-center mb-4">{error}</p>}
+        {isLoading ? (
+          <p className="text-center">Carregando categorias...</p>
+        ) : (
+          <>
+            {stage === "category" && <CategorySelection categories={categories} onStartQuiz={startQuiz} />}
+            {stage === "quiz" && questions[currentQuestionIndex] && (
+              <Quiz
+                question={questions[currentQuestionIndex]}
+                currentQuestionIndex={currentQuestionIndex}
+                totalQuestions={questions.length}
+                selectedAnswer={selectedAnswer}
+                onAnswer={handleAnswer}
+                onPrevious={goToPreviousQuestion}
+                onNext={goToNextQuestion}
+                onFinish={finishQuiz}
+              />
+            )}
+            {stage === "results" && (
+              <Results
+                correctAnswers={calculateResults()}
+                totalQuestions={questions.length}
+                onReviewQuiz={() => setStage("review")}
+              />
+            )}
+            {stage === "review" && (
+              <Review
+                questions={questions}
+                answers={answers}
+                onBackToCategories={() => {
+                  setStage("category")
+                  setCurrentQuestionIndex(0)
+                  setAnswers({})
+                  setQuestions([])
+                  setSelectedAnswer(null)
+                }}
+              />
+            )}
+          </>
+        )}
       </main>
-      <Footer />
+
+      <footer className="bg-muted">
+        <div className="container mx-auto px-4 py-6">
+          <div className="flex flex-col md:flex-row justify-between items-center">
+            <div className="flex items-center space-x-2 mb-4 md:mb-0">
+              <Book className="h-6 w-6" />
+              <span className="text-sm font-semibold">© 2024 Geodinâmica. Todos os direitos reservados.</span>
+            </div>
+            <nav className="flex space-x-4">
+              <Link href="/privacy" className="text-sm hover:underline">
+                Política de Privacidade
+              </Link>
+              <Link href="/terms" className="text-sm hover:underline">
+                Termos de Serviço
+              </Link>
+              <Link href="/faq" className="text-sm hover:underline">
+                FAQ
+              </Link>
+            </nav>
+          </div>
+        </div>
+      </footer>
     </div>
   )
 }

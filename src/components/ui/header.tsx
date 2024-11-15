@@ -9,10 +9,8 @@ export default function Header() {
     <header className="bg-primary text-primary-foreground shadow-md">
       <div className="container mx-auto px-4 py-4">
         <nav className="flex items-center justify-between">
-          <Link href="/" className="flex items-center space-x-2">
             <Globe className="h-6 w-6" />
-            <span className="text-xl font-bold">Geodynamics</span>
-          </Link>
+            <span className="text-xl font-bold">Geodinâmica</span>
           <div className="hidden md:flex space-x-4">
             <Link href="/learn" className="hover:underline">
               Learn
