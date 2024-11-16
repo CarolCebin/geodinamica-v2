@@ -1,11 +1,15 @@
-import React from 'react'
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Label } from "@/components/ui/label"
-import { Progress } from "@/components/ui/progress"
-import { Question } from '@/app/types'
-import { ExternalLink } from 'lucide-react'
+import React from 'react';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
+import { Progress } from "@/components/ui/progress";
+import { Question } from '@/app/types';
+import { ExternalLink } from 'lucide-react';
+
+// Importe as bibliotecas do Contentful
+import { documentToReactComponents } from '@contentful/rich-text-react-renderer';
+import { BLOCKS, INLINES } from '@contentful/rich-text-types';
 
 interface QuizProps {
   question: Question;
@@ -16,6 +20,7 @@ interface QuizProps {
   onPrevious: () => void;
   onNext: () => void;
   onFinish: () => void;
+  assets: any[]; // Adicione esta linha para receber os ativos
 }
 
 export function Quiz({
@@ -26,53 +31,60 @@ export function Quiz({
   onAnswer,
   onPrevious,
   onNext,
-  onFinish
+  onFinish,
+  assets, // Receba os ativos como prop
 }: QuizProps) {
-  const progress = ((currentQuestionIndex + 1) / totalQuestions) * 100
+  const progress = ((currentQuestionIndex + 1) / totalQuestions) * 100;
+
+  // Configurações para renderizar o rich text
+  const options = {
+    renderNode: {
+      [BLOCKS.PARAGRAPH]: (node: any, children: any) => {
+        return <p>{children}</p>;
+      },
+      [BLOCKS.EMBEDDED_ASSET]: (node: any) => {
+        const assetId = node.data.target.sys.id;
+        const asset = assets.find((a: any) => a.sys.id === assetId);
+
+        if (asset) {
+          const { url } = asset.fields.file;
+          const description = asset.fields.description || asset.fields.title;
+
+          return (
+            <img
+              key={assetId}
+              src={url}
+              alt={description || 'Imagem'}
+              className="my-4"
+            />
+          );
+        } else {
+          return (
+            <p className="my-4 text-red-500">Imagem não encontrada.</p>
+          );
+        }
+      },
+      [INLINES.HYPERLINK]: (node: any, children: any) => {
+        const url = node.data.uri;
+        return (
+          <a
+            href={url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-primary hover:underline inline-flex items-center gap-1"
+          >
+            {children}
+            <ExternalLink className="h-3 w-3" />
+          </a>
+        );
+      },
+      // Adicione outros renderizadores de nó conforme necessário
+    },
+  };
 
   const renderQuestionBody = (body: any) => {
-    if (typeof body === 'string') {
-      // Split the text by sections that might contain links
-      const parts = body.split(/($$acesso em:[^)]+$$)/)
-
-      return parts.map((part, index) => {
-        // Check if this part is a link reference
-        if (part.startsWith('(acesso em:')) {
-          const urlMatch = part.match(/https?:\/\/[^\s)]+/)
-          if (urlMatch) {
-            const url = urlMatch[0]
-            return (
-              <span key={index} className="inline-flex items-center gap-1 text-sm text-muted-foreground">
-                (acesso em:{' '}
-                <a
-                  href={url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-primary hover:underline"
-                >
-                  {url}
-                  <ExternalLink className="h-3 w-3" />
-                </a>
-                )
-              </span>
-            )
-          }
-        }
-        // Regular text
-        return <span key={index}>{part}</span>
-      })
-    } else if (body && typeof body === 'object' && body.content) {
-      return body.content.map((item: any, index: number) => {
-        if (item.nodeType === 'paragraph') {
-          const text = item.content?.[0]?.value || ''
-          // Apply the same link processing to rich text content
-          return <p key={index} className="mb-4">{renderQuestionBody(text)}</p>
-        }
-        return null
-      })
-    }
-    return <p>Error: Unable to display question content.</p>
-  }
+    return documentToReactComponents(body, options);
+  };
 
   return (
     <Card className="w-full max-w-4xl mx-auto">
@@ -127,5 +139,5 @@ export function Quiz({
         </Button>
       </CardFooter>
     </Card>
-  )
+  );
 }

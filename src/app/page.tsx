@@ -58,11 +58,13 @@ export default function GeodynamicsPlatform() {
   const startQuiz = async (categoryId: string) => {
     try {
       setSelectedCategory(categoryId)
+      setIsLoading(true) // Adicionado para mostrar carregamento durante a busca das perguntas
       const fetchedQuestions = await fetchQuestions(categoryId)
       if (fetchedQuestions.length === 0) {
         setError('No questions found for this category. Please try another category.')
         setStage("category")
       } else {
+        console.log(fetchedQuestions)
         setQuestions(fetchedQuestions)
         setStage("quiz")
         setError(null)
@@ -71,6 +73,8 @@ export default function GeodynamicsPlatform() {
       console.error('Error starting quiz:', err)
       setError('Failed to load questions. Please try again later.')
       setStage("category")
+    } finally {
+      setIsLoading(false) // Certifique-se de parar o carregamento após a busca
     }
   }
 
@@ -103,7 +107,6 @@ export default function GeodynamicsPlatform() {
     setSelectedAnswer(null)
     setQuestions([])
   }
-
 
   const calculateResults = () => {
     let correct = 0
@@ -158,7 +161,7 @@ export default function GeodynamicsPlatform() {
         <h1 className="text-3xl font-bold text-center mb-6">Bem-vindo à Geodinâmica</h1>
         {error && <p className="text-red-500 text-center mb-4">{error}</p>}
         {isLoading ? (
-          <p className="text-center">Carregando categorias...</p>
+          <p className="text-center">Carregando...</p>
         ) : (
           <>
             {stage === "category" && <CategorySelection categories={categories} onStartQuiz={startQuiz} />}
@@ -172,6 +175,7 @@ export default function GeodynamicsPlatform() {
                 onPrevious={goToPreviousQuestion}
                 onNext={goToNextQuestion}
                 onFinish={finishQuiz}
+                assets={questions[currentQuestionIndex].assets} // Passando os assets para o componente Quiz
               />
             )}
             {stage === "results" && (
@@ -181,7 +185,7 @@ export default function GeodynamicsPlatform() {
                 onReviewQuiz={() => setStage("review")}
                 onTryAgain={() => {
                   resetQuizState()
-                  startQuiz(selectedCategory)
+                  startQuiz(selectedCategory!)
                 }}
                 onChooseNewQuiz={() => {
                   resetQuizState()
@@ -195,10 +199,7 @@ export default function GeodynamicsPlatform() {
                 answers={answers}
                 onBackToCategories={() => {
                   setStage("category")
-                  setCurrentQuestionIndex(0)
-                  setAnswers({})
-                  setQuestions([])
-                  setSelectedAnswer(null)
+                  resetQuizState()
                 }}
               />
             )}
