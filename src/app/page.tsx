@@ -39,7 +39,6 @@ export default function GeodynamicsPlatform() {
       try {
         setIsLoading(true)
         const fetchedCategories = await fetchCategories()
-        console.log('Fetched categories:', fetchedCategories)
         if (fetchedCategories.length === 0) {
           setError('No categories found. Please try again later.')
         } else {
@@ -97,6 +96,14 @@ export default function GeodynamicsPlatform() {
   const finishQuiz = () => {
     setStage("results")
   }
+
+  const resetQuizState = () => {
+    setCurrentQuestionIndex(0)
+    setAnswers({})
+    setSelectedAnswer(null)
+    setQuestions([])
+  }
+
 
   const calculateResults = () => {
     let correct = 0
@@ -172,8 +179,14 @@ export default function GeodynamicsPlatform() {
                 correctAnswers={calculateResults()}
                 totalQuestions={questions.length}
                 onReviewQuiz={() => setStage("review")}
-                onTryAgain={() => console.log("tentando novamente")}
-                onChooseNewQuiz={() => console.log("escolhendo novo quiz")}
+                onTryAgain={() => {
+                  resetQuizState()
+                  startQuiz(selectedCategory)
+                }}
+                onChooseNewQuiz={() => {
+                  resetQuizState()
+                  setStage("category");
+                }}
               />
             )}
             {stage === "review" && (

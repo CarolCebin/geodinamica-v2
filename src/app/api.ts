@@ -9,7 +9,6 @@ interface ContentfulResponse {
 
 export async function fetchCategories(): Promise<Category[]> {
   try {
-    console.log('Fetching categories...')
     const controller = new AbortController()
     const timeoutId = setTimeout(() => controller.abort(), 10000) // 10 second timeout
 
@@ -23,7 +22,6 @@ export async function fetchCategories(): Promise<Category[]> {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
     const data: ContentfulResponse = await response.json()
-    console.log('Raw categories data:', JSON.stringify(data, null, 2))
     
     if (!data.items || !Array.isArray(data.items)) {
       console.error('Unexpected data structure:', data)
@@ -35,7 +33,6 @@ export async function fetchCategories(): Promise<Category[]> {
       name: item.fields.categoryName,
       description: item.fields.categoryDescription?.content?.[0]?.content?.[0]?.value || 'No description available'
     }))
-    console.log('Processed categories:', categories)
     return categories
   } catch (error) {
     if (error instanceof Error) {
@@ -49,7 +46,6 @@ export async function fetchCategories(): Promise<Category[]> {
 
 export async function fetchQuestions(categoryId: string): Promise<Question[]> {
   try {
-    console.log(`Fetching questions for category ${categoryId}...`)
     const controller = new AbortController()
     const timeoutId = setTimeout(() => controller.abort(), 10000) // 10 second timeout
 
@@ -63,7 +59,6 @@ export async function fetchQuestions(categoryId: string): Promise<Question[]> {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
     const data: ContentfulResponse = await response.json()
-    console.log('Raw questions data:', JSON.stringify(data, null, 2))
 
     if (!data.items || !Array.isArray(data.items)) {
       console.error('Unexpected data structure:', data)
@@ -87,7 +82,6 @@ export async function fetchQuestions(categoryId: string): Promise<Question[]> {
         explanation: item.fields.explanationAnswer?.content?.[0]?.content?.[0]?.value || 'No explanation available'
       }
     })
-    console.log('Processed questions:', questions)
     return questions
   } catch (error) {
     if (error instanceof Error) {

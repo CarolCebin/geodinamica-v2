@@ -34,7 +34,7 @@ export function Quiz({
     if (typeof body === 'string') {
       // Split the text by sections that might contain links
       const parts = body.split(/($$acesso em:[^)]+$$)/)
-      
+
       return parts.map((part, index) => {
         // Check if this part is a link reference
         if (part.startsWith('(acesso em:')) {
@@ -89,21 +89,20 @@ export function Quiz({
         <div className="prose prose-slate dark:prose-invert max-w-none">
           {renderQuestionBody(question.body)}
         </div>
-        <RadioGroup 
-          value={selectedAnswer || ''} 
+        <RadioGroup
+          value={selectedAnswer || ''}
           onValueChange={onAnswer}
           className="space-y-3"
         >
           {question.options.map((option) => (
             <div
               key={option.id}
-              className={`flex items-center space-x-2 rounded-lg border p-4 transition-colors ${
-                selectedAnswer === option.id ? 'bg-muted' : 'hover:bg-muted/50'
-              }`}
+              className={`flex items-center space-x-2 rounded-lg border p-4 transition-colors ${selectedAnswer === option.id ? 'bg-muted' : 'hover:bg-muted/50'
+                }`}
             >
               <RadioGroupItem value={option.id} id={option.id} />
-              <Label 
-                htmlFor={option.id} 
+              <Label
+                htmlFor={option.id}
                 className="flex-grow cursor-pointer text-base"
               >
                 {option.text}

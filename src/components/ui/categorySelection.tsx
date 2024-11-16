@@ -48,8 +48,8 @@ export function CategorySelection({ categories, onStartQuiz }: CategorySelection
             <CardFooter>
               <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                 <DialogTrigger asChild>
-                  <Button 
-                    onClick={() => setSelectedCategory(category)} 
+                  <Button
+                    onClick={() => setSelectedCategory(category)}
                     className="w-full bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white font-bold py-2 px-4 rounded-full transition-all duration-300 transform hover:scale-105"
                   >
                     Iniciar Quiz
