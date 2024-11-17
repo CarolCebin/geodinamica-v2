@@ -1,7 +1,15 @@
-import React from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Question } from '@/app/types'
+// components/ui/review.tsx
+
+import React from 'react';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Question } from '@/app/types';
+import { renderRichText } from '@/lib/utils'; // Ajuste o caminho conforme necessário
 
 interface ReviewProps {
   questions: Question[];
@@ -10,47 +18,41 @@ interface ReviewProps {
 }
 
 export function Review({ questions, answers, onBackToCategories }: ReviewProps) {
-  const renderQuestionBody = (body: string | { content: Array<{ nodeType: string; content?: Array<{ value: string }> }> }) => {
-    if (typeof body === 'string') {
-      return <p>{body}</p>
-    } else if (body && typeof body === 'object' && Array.isArray(body.content)) {
-      return body.content.map((item, index) => {
-        if (item.nodeType === 'paragraph' && item.content && item.content[0]) {
-          return <p key={index}>{item.content[0].value}</p>
-        }
-        return null
-      })
-    }
-    return <p>Unable to display question content.</p>
-  }
-
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {questions.map((question, index) => (
         <Card key={question.id}>
           <CardHeader>
             <CardTitle>Questão {index + 1}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
-            <div className="font-medium">
-              {renderQuestionBody(question.body)}
+            <div
+              className="font-medium"
+              style={{ whiteSpace: 'pre-wrap' }}
+            >
+              {renderRichText(question.body, question.assets)}
             </div>
-            <p>Sua resposta: {question.options.find(opt => opt.id === answers[question.id])?.text || 'Não respondida'}</p>
-            <p className={answers[question.id] === question.correctOptionId ? "text-green-600 font-semibold" : "text-red-600 font-semibold"}>
-              Resposta correta: {question.options.find(opt => opt.id === question.correctOptionId)?.text}
+            <p>
+              Sua resposta:{' '}
+              {question.options.find(opt => opt.id === answers[question.id])?.text || 'Não respondida'}
             </p>
-            {answers[question.id] !== question.correctOptionId && (
-              <div className="mt-2 p-2 bg-yellow-100 rounded">
-                <p className="font-semibold">Explicação:</p>
-                <p>{question.explanation}</p>
-              </div>
-            )}
+            <p
+              className={
+                answers[question.id] === question.correctOptionId
+                  ? 'text-green-600 font-semibold'
+                  : 'text-red-600 font-semibold'
+              }
+            >
+              {answers[question.id] === question.correctOptionId ? 'Correta' : 'Incorreta'}
+            </p>
+            <div className="mt-2">
+              <strong>Explicação:</strong>
+              <p>{question.explanation}</p>
+            </div>
           </CardContent>
         </Card>
       ))}
-      <Button onClick={onBackToCategories} className="w-full bg-primary text-primary-foreground hover:bg-primary/90">
-        Voltar para Categorias
-      </Button>
+      <Button onClick={onBackToCategories}>Voltar às Categorias</Button>
     </div>
-  )
+  );
 }
