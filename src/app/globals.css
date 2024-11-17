@@ -11,3 +11,8 @@ body {
     --radius: 0.5rem;
   }
 }
+
+li>p {
+  display: inline;
+  margin: 0;
+}
